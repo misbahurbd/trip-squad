@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Verify Your Account - Trip Squad</title>
+    <style>
+      /* Basic styles */
+      body {
+        font-family: sans-serif;
+        margin: 0;
+        padding: 0;
+        color: #333;
+      }
+      a {
+        color: #33b5e5;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      /* Header */
+      header {
+        background-color: #f5f5f5;
+        padding: 20px;
+      }
+      header h1 {
+        font-size: 1.5em;
+        margin: 0;
+      }
+      /* Content */
+      .content {
+        padding: 20px;
+      }
+      .content p {
+        margin-bottom: 10px;
+        line-height: 1.5;
+      }
+      .content a {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #33b5e5;
+        color: #fff;
+        border-radius: 5px;
+      }
+      /* Footer */
+      footer {
+        background-color: #f5f5f5;
+        padding: 10px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Trip Squad</h1>
+    </header>
+    <div class="content">
+      <p>Hi {{name}},</p>
+      <p>
+        Thank you for creating an account with Trip Squad! To get started, you
+        need to verify your email address.
+      </p>
+      <p>Click the button below to verify your account:</p>
+      <a href="{{verification-link}}">Verify Your Email</a>
+      <p>
+        This link will expire in {{duration}} hours. If you didn't request a
+        password reset, you can safely ignore this email.
+      </p>
+    </div>
+    <footer>
+      <p>© 2024 Trip Squad</p>
+    </footer>
+  </body>
+</html>

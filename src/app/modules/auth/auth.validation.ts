@@ -23,6 +23,11 @@ const registerSchema = z.object({
     }),
 })
 
+const forgetPasswordSchema = z.object({
+  identifer: z.string().min(1, { message: "Email or Username is required" }),
+})
+
 export const authValidation = {
   registerSchema,
+  forgetPasswordSchema,
 }
