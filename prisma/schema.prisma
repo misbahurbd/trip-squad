@@ -8,17 +8,19 @@ datasource db {
 }
 
 model User {
-  id             String     @id @default(uuid())
-  username       String     @unique
-  email          String     @unique
+  id             String        @id @default(uuid())
+  username       String        @unique
+  email          String        @unique
   emailVerified  DateTime?
   hashedPassword String
-  role           UserRole   @default(User)
-  status         UserStatus @default(Active)
-  isDeleted      Boolean    @default(false)
+  role           UserRole      @default(User)
+  status         UserStatus    @default(Active)
+  isDeleted      Boolean       @default(false)
   profile        Profile?
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  trip           Trip[]
+  travelBuddy    TravelBuddy[]
 
   @@map("user")
 }
@@ -49,6 +51,40 @@ model VerificationToken {
   @@map("verification_token")
 }
 
+model Trip {
+  id          String        @id @default(uuid())
+  destination String
+  description String
+  startDate   String
+  endDate     String
+  photos      String[]
+  budget      Int
+  createdId   String
+  createdBy   User          @relation(fields: [userId], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  userId      String
+  travelBuddy TravelBuddy[]
+
+  @@index([description, startDate, endDate])
+  @@map("trip")
+}
+
+model TravelBuddy {
+  id     String            @id @default(uuid())
+  status TravelBuddyStatus @default(Pending)
+  tripId String
+  trip   Trip              @relation(fields: [tripId], references: [id])
+  userId String
+  user   User              @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, tripId])
+  @@map("travel-buddy")
+}
+
 enum UserRole {
   SuperAdmin
   Admin
@@ -57,10 +93,16 @@ enum UserRole {
 
 enum UserStatus {
   Active
-  Deactivate
+  Deactivated
 }
 
 enum TokenType {
   Verify
   Reset
+}
+
+enum TravelBuddyStatus {
+  Pending
+  Approved
+  Rejected
 }

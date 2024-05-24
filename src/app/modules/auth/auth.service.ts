@@ -307,15 +307,23 @@ const resetPassword = async (token: string, payload: { password: string }) => {
     Number(config.hashRound)
   )
 
-  const result = await prisma.user.update({
-    where: {
-      email: verificationToken.email,
-    },
-    data: {
-      hashedPassword,
-    },
-  })
+  const result = await prisma.$transaction(async tsx => {
+    const user = await tsx.user.update({
+      where: {
+        email: verificationToken.email,
+      },
+      data: {
+        hashedPassword,
+      },
+    })
 
+    await tsx.verificationToken.delete({
+      where: {
+        token: verificationToken.token,
+      },
+    })
+    return user
+  })
   return result
 }
 

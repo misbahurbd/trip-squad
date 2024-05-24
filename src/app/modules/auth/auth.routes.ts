@@ -12,7 +12,7 @@ router.post(
   validateRequest(authValidation.registerSchema),
   authController.userRegister
 )
-router.post("/login", reqLimiter(5), authController.userLogin)
+router.post("/login", reqLimiter(100), authController.userLogin)
 
 router.post("/verify/:token", authController.verifyAccount)
 

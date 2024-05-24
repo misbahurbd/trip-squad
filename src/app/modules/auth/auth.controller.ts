@@ -1,3 +1,4 @@
+import config from "../../../config"
 import { catchAsync } from "../../../utils/catch-async"
 import { sendResponse } from "../../../utils/send-response"
 import { authService } from "./auth.service"
@@ -16,17 +17,20 @@ const userLogin = catchAsync(async (req, res) => {
   const result = await authService.userLogin(req.body)
 
   res.cookie("refreshToken", result.refreshToken, {
-    secure: false,
+    secure: config.env === "production",
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000 * 7,
+  })
+  res.cookie("session", result.accessToken, {
+    secure: config.env === "production",
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 * 1,
   })
 
   sendResponse(res, {
     statusCode: 200,
     message: "User logged in successfully",
-    data: {
-      accessToken: result.accessToken,
-    },
+    data: null,
   })
 })
 
