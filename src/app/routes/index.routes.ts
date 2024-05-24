@@ -13,3 +13,5 @@ const routers: { path: string; router: Router }[] = [
 routers.forEach(route => {
   router.use(route.path, route.router)
 })
+
+export const moduleRoutesd = router
