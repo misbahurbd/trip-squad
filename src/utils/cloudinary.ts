@@ -1,4 +1,5 @@
-import { v2 as cloudinary } from "cloudinary"
+import { UploadApiResponse, v2 as cloudinary } from "cloudinary"
+import fs from "fs"
 import config from "../config"
 
 cloudinary.config({
@@ -7,4 +8,19 @@ cloudinary.config({
   api_secret: config.cloudinary.apiSecret,
 })
 
-export default cloudinary
+const uploadOnCloudinary = async (
+  localFilePath: string
+): Promise<UploadApiResponse | null> => {
+  try {
+    if (!localFilePath) return null
+    const response = await cloudinary.uploader.upload(localFilePath)
+
+    return response
+  } catch (error) {
+    console.log({ error })
+    fs.unlinkSync(localFilePath)
+    return null
+  }
+}
+
+export default uploadOnCloudinary

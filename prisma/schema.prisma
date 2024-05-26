@@ -55,16 +55,17 @@ model Trip {
   id          String        @id @default(uuid())
   destination String
   description String
-  startDate   String
-  endDate     String
+  startDate   DateTime
+  endDate     DateTime
+  tripType    String
   photos      String[]
   budget      Int
-  createdId   String
-  createdBy   User          @relation(fields: [userId], references: [id])
+  isDeleted   Boolean       @default(false)
+  creatorId   String
+  createdBy   User          @relation(fields: [creatorId], references: [id])
+  travelBuddy TravelBuddy[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-  userId      String
-  travelBuddy TravelBuddy[]
 
   @@index([description, startDate, endDate])
   @@map("trip")

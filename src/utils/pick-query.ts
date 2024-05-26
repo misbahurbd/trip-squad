@@ -1,6 +1,9 @@
-export const pickQueryTerms = <T extends Record<string, unknown>, K extends keyof T>(
+export const pickQueryTerms = <
+  T extends Record<string, unknown>,
+  K extends keyof T
+>(
   queryObj: T,
-  keys: K[],
+  keys: K[]
 ) => {
   const finalQuery: Partial<T> = {}
   for (const key of keys) {

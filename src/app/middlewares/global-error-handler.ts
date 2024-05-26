@@ -23,6 +23,12 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     if (err.keyValue) {
       message = `${Object.keys(err.keyValue)} is already exist`
     }
+  } else if (err.code && err.code === "P2002") {
+    statusCode = httpStatus.BAD_REQUEST
+    message = "Duplicate Entry"
+    if (err?.meta?.target) {
+      message = `This ${err?.meta?.target[0]} already used!`
+    }
   } else {
     errorDetails = null
   }

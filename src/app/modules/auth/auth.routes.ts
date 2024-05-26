@@ -16,7 +16,7 @@ router.post("/login", reqLimiter(100), authController.userLogin)
 
 router.post("/verify/:token", authController.verifyAccount)
 
-router.post("/change-password", checkAuth(), authController.changePassword)
+router.put("/change-password", checkAuth(), authController.changePassword)
 
 router.post(
   "/forget-password",
