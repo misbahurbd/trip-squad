@@ -129,6 +129,21 @@ const getTripById = async (id: string) => {
       id,
       isDeleted: false,
     },
+    include: {
+      createdBy: {
+        select: {
+          username: true,
+          email: true,
+          profile: true,
+          _count: {
+            select: {
+              trip: true,
+            },
+          },
+        },
+      },
+      tripBuddy: true,
+    },
   })
 
   return trip
@@ -160,10 +175,37 @@ const topTripTypes = async () => {
   return sortedResults
 }
 
+const tripTypes = async () => {
+  const tripTypes = await prisma.trip.groupBy({
+    by: ["tripType"],
+    _count: {
+      tripType: true,
+    },
+    where: {
+      isDeleted: false,
+    },
+  })
+
+  // Filter out trip types with a count of 0
+  const filteredTripTypeCounts = tripTypes.filter(
+    tripType => tripType._count.tripType > 0
+  )
+
+  const formattedResults = filteredTripTypeCounts.map(tripType => ({
+    label: tripType.tripType,
+    count: tripType._count.tripType,
+  }))
+
+  const sortedResults = formattedResults.sort()
+
+  return sortedResults
+}
+
 export const tripService = {
   createTrip,
   getTrips,
   getMyTrips,
   getTripById,
+  tripTypes,
   topTripTypes,
 }

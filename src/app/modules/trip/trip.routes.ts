@@ -12,6 +12,7 @@ router.post(
   tripController.createTrip
 )
 router.get("/", tripController.getTrips)
+router.get("/trip-types", tripController.tripTypes)
 router.get("/top-trip-types", tripController.topTripTypes)
 router.get("/get-my-trips", checkAuth("User"), tripController.getMyTrips)
 router.get("/:tripId", tripController.getTripById)

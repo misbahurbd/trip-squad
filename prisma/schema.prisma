@@ -8,19 +8,19 @@ datasource db {
 }
 
 model User {
-  id             String        @id @default(uuid())
-  username       String        @unique
-  email          String        @unique
+  id             String      @id @default(uuid())
+  username       String      @unique
+  email          String      @unique
   emailVerified  DateTime?
   hashedPassword String
-  role           UserRole      @default(User)
-  status         UserStatus    @default(Active)
-  isDeleted      Boolean       @default(false)
+  role           UserRole    @default(User)
+  status         UserStatus  @default(Active)
+  isDeleted      Boolean     @default(false)
   profile        Profile?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
   trip           Trip[]
-  travelBuddy    TravelBuddy[]
+  tripBuddy      TripBuddy[]
 
   @@map("user")
 }
@@ -52,7 +52,7 @@ model VerificationToken {
 }
 
 model Trip {
-  id          String        @id @default(uuid())
+  id          String      @id @default(uuid())
   destination String
   description String
   startDate   DateTime
@@ -62,25 +62,24 @@ model Trip {
   itinerary   String
   location    String
   budget      Int
-  tripStatus  TripStatus    @default(Open)
-  isDeleted   Boolean       @default(false)
+  tripStatus  TripStatus  @default(Open)
+  isDeleted   Boolean     @default(false)
   creatorId   String
-  createdBy   User          @relation(fields: [creatorId], references: [id])
-  travelBuddy TravelBuddy[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdBy   User        @relation(fields: [creatorId], references: [id])
+  tripBuddy   TripBuddy[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   @@index([description, startDate, endDate])
   @@map("trip")
 }
 
-model TravelBuddy {
-  id     String            @id @default(uuid())
-  status TravelBuddyStatus @default(Pending)
+model TripBuddy {
   tripId String
-  trip   Trip              @relation(fields: [tripId], references: [id])
+  trip   Trip            @relation(fields: [tripId], references: [id])
   userId String
-  user   User              @relation(fields: [userId], references: [id])
+  user   User            @relation(fields: [userId], references: [id])
+  status TripBuddyStatus @default(Pending)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -110,7 +109,7 @@ enum TripStatus {
   Closed
 }
 
-enum TravelBuddyStatus {
+enum TripBuddyStatus {
   Pending
   Approved
   Rejected

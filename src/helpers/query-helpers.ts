@@ -75,6 +75,14 @@ export const parseFilterOptions = (
               },
             }
             break
+          case "tripType":
+            const triptypes = value.toString().split(",")
+            query = {
+              tripType: {
+                in: triptypes,
+              },
+            }
+            break
           default:
             query = {
               [key]: {
