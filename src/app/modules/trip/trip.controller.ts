@@ -41,6 +41,24 @@ const getTrips = catchAsync(async (req, res) => {
   })
 })
 
+const getMyTrips = catchAsync(async (req, res) => {
+  const currentUser = req.user
+  const query = pickQueryTerms(req.query, tripQueryFields)
+  const options = pickQueryTerms(req.query, [
+    "limit",
+    "page",
+    "sortBy",
+    "sortOrder",
+  ])
+  const result = await tripService.getMyTrips(currentUser, query, options)
+
+  sendResponse(res, {
+    message: "Trips data retrieved successfully",
+    meta: result.meta,
+    data: result.data,
+  })
+})
+
 const getTripById = catchAsync(async (req, res) => {
   const result = await tripService.getTripById(req.params.tripId)
 
@@ -50,8 +68,19 @@ const getTripById = catchAsync(async (req, res) => {
   })
 })
 
+const topTripTypes = catchAsync(async (req, res) => {
+  const result = await tripService.topTripTypes()
+
+  sendResponse(res, {
+    message: "Top trip types retrieved successfully",
+    data: result,
+  })
+})
+
 export const tripController = {
   createTrip,
   getTrips,
+  getMyTrips,
   getTripById,
+  topTripTypes,
 }

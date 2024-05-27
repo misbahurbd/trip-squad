@@ -107,7 +107,7 @@ const userLogin = async (credentials: IUserLogin) => {
     throw new AppError(httpStatus.NOT_FOUND, "User not found")
   }
 
-  if (user.status === "Deactivated") {
+  if (user.status === "Blocked") {
     throw new AppError(httpStatus.UNAUTHORIZED, "Your account is deactivated")
   }
 
@@ -154,7 +154,7 @@ const changePassword = async (
     throw new AppError(httpStatus.NOT_FOUND, "User not found")
   }
 
-  if (user.status === "Deactivated") {
+  if (user.status === "Blocked") {
     throw new AppError(httpStatus.UNAUTHORIZED, "Your account is deactivated")
   }
 

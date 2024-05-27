@@ -6,4 +6,6 @@ export interface ITrip {
   tripType: string
   photos: string[]
   budget: number
+  location: string
+  itinerary: string
 }

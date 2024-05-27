@@ -59,7 +59,10 @@ model Trip {
   endDate     DateTime
   tripType    String
   photos      String[]
+  itinerary   String
+  location    String
   budget      Int
+  tripStatus  TripStatus    @default(Open)
   isDeleted   Boolean       @default(false)
   creatorId   String
   createdBy   User          @relation(fields: [creatorId], references: [id])
@@ -94,12 +97,17 @@ enum UserRole {
 
 enum UserStatus {
   Active
-  Deactivated
+  Blocked
 }
 
 enum TokenType {
   Verify
   Reset
+}
+
+enum TripStatus {
+  Open
+  Closed
 }
 
 enum TravelBuddyStatus {

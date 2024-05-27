@@ -1,4 +1,4 @@
-import { JwtPayload } from "jsonwebtoken"
+import { Jwt, JwtPayload } from "jsonwebtoken"
 import { ITrip } from "./trip.interface"
 import prisma from "../../../utils/prisma-client"
 import {
@@ -40,6 +40,8 @@ const createTrip = async (
       description: tripData.description,
       budget: Number(tripData.budget),
       photos: imgArray as string[],
+      location: tripData.location,
+      itinerary: tripData.itinerary,
       creatorId: user.id,
     },
   })
@@ -83,11 +85,7 @@ const getTrips = async (query: any, options: IOptions) => {
   }
 }
 
-const getTripsByUserId = async (
-  userId: string,
-  query: any,
-  options: IOptions
-) => {
+const getMyTrips = async (user: JwtPayload, query: any, options: IOptions) => {
   const { page, limit, skip, sortBy, sortOrder } = parseOptions(options)
   const filterCondition: Prisma.TripWhereInput[] = parseFilterOptions(
     query,
@@ -98,7 +96,7 @@ const getTripsByUserId = async (
     where: {
       AND: filterCondition,
       isDeleted: false,
-      creatorId: userId,
+      creatorId: user.id,
     },
     skip,
     take: limit,
@@ -111,7 +109,7 @@ const getTripsByUserId = async (
     where: {
       AND: filterCondition,
       isDeleted: false,
-      creatorId: userId,
+      creatorId: user.id,
     },
   })
 
@@ -136,8 +134,36 @@ const getTripById = async (id: string) => {
   return trip
 }
 
+const topTripTypes = async () => {
+  const tripTypes = await prisma.trip.groupBy({
+    by: ["tripType"],
+    _count: {
+      tripType: true,
+    },
+    where: {
+      isDeleted: false,
+    },
+  })
+
+  // Filter out trip types with a count of 0
+  const filteredTripTypeCounts = tripTypes.filter(
+    tripType => tripType._count.tripType > 0
+  )
+
+  const formattedResults = filteredTripTypeCounts.map(tripType => ({
+    label: tripType.tripType,
+    count: tripType._count.tripType,
+  }))
+
+  const sortedResults = formattedResults.sort((a, b) => b.count - a.count)
+
+  return sortedResults
+}
+
 export const tripService = {
   createTrip,
   getTrips,
+  getMyTrips,
   getTripById,
+  topTripTypes,
 }
