@@ -4,6 +4,16 @@ import { tripBuddyController } from "./trip-buddy.controller"
 
 const router = express.Router()
 
-router.post("/:tripId", checkAuth("User"), tripBuddyController.tripBuddyRequest)
+router.get("/", checkAuth(), tripBuddyController.tripBuddyRequestByUserId)
+router.put(
+  "/request/:tripId",
+  checkAuth(),
+  tripBuddyController.tripBuddyRequest
+)
+router.put(
+  "/response/:buddyId",
+  checkAuth(),
+  tripBuddyController.tripBuddyResponse
+)
 
 export const tripBuddyRoutes = router

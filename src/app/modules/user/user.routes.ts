@@ -6,7 +6,6 @@ const router = express.Router()
 
 router.get("/", checkAuth("Admin"), userController.getAllUsers)
 router.get("/current-user", checkAuth(), userController.currentUser)
-
 router.put(
   "/update-status/:userId",
   checkAuth("Admin"),

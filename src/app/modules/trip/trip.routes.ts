@@ -14,7 +14,8 @@ router.post(
 router.get("/", tripController.getTrips)
 router.get("/trip-types", tripController.tripTypes)
 router.get("/top-trip-types", tripController.topTripTypes)
-router.get("/get-my-trips", checkAuth("User"), tripController.getMyTrips)
+router.get("/get-my-trips", checkAuth(), tripController.getMyTrips)
+router.get("/photos", tripController.tripPhotos)
 router.get("/:tripId", tripController.getTripById)
 
 export const tripRoutes = router

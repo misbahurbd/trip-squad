@@ -16,6 +16,7 @@ const currentUser = catchAsync(async (req, res) => {
 })
 
 const getAllUsers = catchAsync(async (req, res) => {
+  const user = req.user
   const query = pickQueryTerms(req.query, userQueryFields)
   const options = pickQueryTerms(req.query, [
     "limit",
@@ -23,7 +24,7 @@ const getAllUsers = catchAsync(async (req, res) => {
     "sortBy",
     "sortOrder",
   ])
-  const result = await userService.getAllUsers(query, options)
+  const result = await userService.getAllUsers(user, query, options)
 
   sendResponse(res, {
     message: "Users data retrieved successfully",

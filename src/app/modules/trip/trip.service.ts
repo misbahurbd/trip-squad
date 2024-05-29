@@ -142,7 +142,15 @@ const getTripById = async (id: string) => {
           },
         },
       },
-      tripBuddy: true,
+      tripBuddy: {
+        include: {
+          user: {
+            select: {
+              profile: true,
+            },
+          },
+        },
+      },
     },
   })
 
@@ -201,6 +209,18 @@ const tripTypes = async () => {
   return sortedResults
 }
 
+const tripsPhotos = async () => {
+  const uniquePhotos = await prisma.trip.findMany({
+    select: {
+      photos: true,
+    },
+    distinct: ["photos"],
+  })
+
+  const tripPhotos = [...new Set(uniquePhotos.flatMap(item => item.photos))]
+  return tripPhotos
+}
+
 export const tripService = {
   createTrip,
   getTrips,
@@ -208,4 +228,5 @@ export const tripService = {
   getTripById,
   tripTypes,
   topTripTypes,
+  tripsPhotos,
 }

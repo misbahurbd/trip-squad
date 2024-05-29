@@ -86,6 +86,15 @@ const topTripTypes = catchAsync(async (req, res) => {
   })
 })
 
+const tripPhotos = catchAsync(async (req, res) => {
+  const result = await tripService.tripsPhotos()
+
+  sendResponse(res, {
+    message: "Trip photos retrieved successfully",
+    data: result,
+  })
+})
+
 export const tripController = {
   createTrip,
   getTrips,
@@ -93,4 +102,5 @@ export const tripController = {
   getTripById,
   tripTypes,
   topTripTypes,
+  tripPhotos,
 }

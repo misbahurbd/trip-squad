@@ -30,7 +30,11 @@ const currentUser = async (currentUser: JwtPayload) => {
   return resposne
 }
 
-const getAllUsers = async (query: any, options: IOptions) => {
+const getAllUsers = async (
+  currentUser: JwtPayload,
+  query: any,
+  options: IOptions
+) => {
   const { page, limit, skip, sortBy, sortOrder } = parseOptions(options)
   const filterCondition: Prisma.UserWhereInput[] = parseFilterOptions(
     query,
@@ -41,7 +45,9 @@ const getAllUsers = async (query: any, options: IOptions) => {
     where: {
       AND: filterCondition,
       isDeleted: false,
-      role: UserRole.User,
+      NOT: {
+        id: currentUser.id,
+      },
     },
     skip,
     take: limit,

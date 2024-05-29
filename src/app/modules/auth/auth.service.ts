@@ -108,7 +108,7 @@ const userLogin = async (credentials: IUserLogin) => {
   }
 
   if (user.status === "Blocked") {
-    throw new AppError(httpStatus.UNAUTHORIZED, "Your account is deactivated")
+    throw new AppError(httpStatus.UNAUTHORIZED, "Your account is blocked")
   }
 
   const isPasswordValid = await bcrypt.compare(
@@ -155,7 +155,7 @@ const changePassword = async (
   }
 
   if (user.status === "Blocked") {
-    throw new AppError(httpStatus.UNAUTHORIZED, "Your account is deactivated")
+    throw new AppError(httpStatus.UNAUTHORIZED, "Your account is blocked")
   }
 
   const isPasswordValid = await bcrypt.compare(
@@ -299,7 +299,7 @@ const resetPassword = async (token: string, payload: { password: string }) => {
   })
 
   if (user?.status !== "Active") {
-    throw new AppError(httpStatus.UNAUTHORIZED, "Your account is deactivated")
+    throw new AppError(httpStatus.UNAUTHORIZED, "Your account is blocked")
   }
 
   const hashedPassword = await bcrypt.hash(
