@@ -86,6 +86,7 @@ model TripBuddy {
   mobile    String
   address   String
   city      String
+  country   String
   status    TripBuddyStatus @default(Pending)
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt

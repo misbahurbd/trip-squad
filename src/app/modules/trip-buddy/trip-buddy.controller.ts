@@ -7,7 +7,11 @@ const tripBuddyRequest = catchAsync(async (req, res) => {
   const user = req.user
   const tripId = req.params.tripId
 
-  const result = await tripBuddyService.tripBuddyRequest(user.id, tripId)
+  const result = await tripBuddyService.tripBuddyRequest(
+    user.id,
+    tripId,
+    req.body
+  )
 
   sendResponse(res, {
     message: "Trip buddy request sent successfully",

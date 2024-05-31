@@ -5,7 +5,7 @@ import { tripBuddyController } from "./trip-buddy.controller"
 const router = express.Router()
 
 router.get("/", checkAuth(), tripBuddyController.tripBuddyRequestByUserId)
-router.put(
+router.post(
   "/request/:tripId",
   checkAuth(),
   tripBuddyController.tripBuddyRequest

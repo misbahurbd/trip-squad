@@ -17,5 +17,7 @@ router.get("/top-trip-types", tripController.topTripTypes)
 router.get("/get-my-trips", checkAuth(), tripController.getMyTrips)
 router.get("/photos", tripController.tripPhotos)
 router.get("/:tripId", tripController.getTripById)
+router.put("/:tripId", checkAuth(), tripController.updateTrip)
+router.delete("/:tripId", checkAuth(), tripController.deleteTrip)
 
 export const tripRoutes = router

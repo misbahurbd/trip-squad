@@ -2,8 +2,13 @@ import httpStatus from "http-status"
 import prisma from "../../../utils/prisma-client"
 import { AppError } from "../../errors/app-error"
 import { IOptions, parseOptions } from "../../../helpers/query-helpers"
+import { ITripBuddy } from "./trip-buddy.interface"
 
-const tripBuddyRequest = async (userId: string, tripId: string) => {
+const tripBuddyRequest = async (
+  userId: string,
+  tripId: string,
+  tripBuddyData: ITripBuddy
+) => {
   const isTripBuddyExist = await prisma.tripBuddy.findFirst({
     where: {
       userId,
@@ -19,6 +24,7 @@ const tripBuddyRequest = async (userId: string, tripId: string) => {
     data: {
       userId,
       tripId,
+      ...tripBuddyData,
     },
   })
 

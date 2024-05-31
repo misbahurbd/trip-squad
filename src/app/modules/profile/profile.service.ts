@@ -6,7 +6,7 @@ import { AppError } from "../../errors/app-error"
 import httpStatus from "http-status"
 
 const updateProfile = async (user: JwtPayload, profileData: IUpdateProfile) => {
-  const { username, ...profileUpdateData } = profileData
+  const { username, email, ...profileUpdateData } = profileData
 
   const profile = await prisma.profile.update({
     where: {
@@ -17,6 +17,7 @@ const updateProfile = async (user: JwtPayload, profileData: IUpdateProfile) => {
       user: {
         update: {
           username,
+          email,
         },
       },
     },

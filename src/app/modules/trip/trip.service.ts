@@ -6,7 +6,7 @@ import {
   parseFilterOptions,
   parseOptions,
 } from "../../../helpers/query-helpers"
-import { Prisma } from "@prisma/client"
+import { Prisma, User, UserRole } from "@prisma/client"
 import { tripSearchFields } from "./trip.constant"
 import uploadOnCloudinary from "../../../utils/cloudinary"
 import { AppError } from "../../errors/app-error"
@@ -49,6 +49,59 @@ const createTrip = async (
   return trip
 }
 
+const updateTrip = async (
+  user: JwtPayload,
+  tripId: string,
+  tripData: ITrip
+) => {
+  switch (user.role as UserRole) {
+    case "Admin":
+      const tripAdmin = await prisma.trip.update({
+        where: {
+          id: tripId,
+        },
+        data: {
+          destination: tripData.destination,
+          description: tripData.description,
+          startDate: tripData.startDate,
+          endDate: tripData.endDate,
+          tripType: tripData.tripType,
+          budget: Number(tripData.budget),
+          location: tripData.location,
+          itinerary: tripData.itinerary,
+        },
+      })
+
+      return tripAdmin
+    case "User":
+      const tripUser = await prisma.trip.update({
+        where: {
+          id: tripId,
+          creatorId: user.id,
+        },
+        data: {
+          destination: tripData.destination,
+          startDate: tripData.startDate,
+          endDate: tripData.endDate,
+          tripType: tripData.tripType,
+          description: tripData.description,
+          budget: Number(tripData.budget),
+          location: tripData.location,
+          itinerary: tripData.itinerary,
+          creatorId: user.id,
+        },
+      })
+
+      if (!tripUser) {
+        throw new AppError(httpStatus.NOT_FOUND, "Trip not found")
+      }
+      return tripUser
+
+    default:
+      break
+  }
+}
+
 const getTrips = async (query: any, options: IOptions) => {
   const { page, limit, skip, sortBy, sortOrder } = parseOptions(options)
   const filterCondition: Prisma.TripWhereInput[] = parseFilterOptions(
@@ -60,6 +113,14 @@ const getTrips = async (query: any, options: IOptions) => {
     where: {
       AND: filterCondition,
       isDeleted: false,
+    },
+    include: {
+      createdBy: {
+        select: {
+          username: true,
+          profile: true,
+        },
+      },
     },
     skip,
     take: limit,
@@ -221,12 +282,52 @@ const tripsPhotos = async () => {
   return tripPhotos
 }
 
+const deleteTrip = async (user: JwtPayload, tripId: string) => {
+  switch (user.role as UserRole) {
+    case "Admin":
+      const adminTrip = await prisma.trip.update({
+        where: {
+          id: tripId,
+        },
+        data: {
+          isDeleted: true,
+        },
+      })
+
+      return adminTrip
+    case "User":
+      const userTrip = await prisma.trip.update({
+        where: {
+          id: tripId,
+          creatorId: user.id,
+        },
+        data: {
+          isDeleted: true,
+        },
+      })
+
+      if (!userTrip) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          "You don't have permission to delete this trip."
+        )
+      }
+
+      return userTrip
+
+    default:
+      return null
+  }
+}
+
 export const tripService = {
   createTrip,
+  updateTrip,
   getTrips,
   getMyTrips,
   getTripById,
   tripTypes,
   topTripTypes,
   tripsPhotos,
+  deleteTrip,
 }

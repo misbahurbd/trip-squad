@@ -24,6 +24,20 @@ const createTrip = catchAsync(async (req, res) => {
   })
 })
 
+const updateTrip = catchAsync(async (req, res) => {
+  const currentUser = req.user
+  const result = await tripService.updateTrip(
+    currentUser,
+    req.params.tripId,
+    req.body
+  )
+
+  sendResponse(res, {
+    message: "Trip update successfully",
+    data: result,
+  })
+})
+
 const getTrips = catchAsync(async (req, res) => {
   const query = pickQueryTerms(req.query, tripQueryFields)
   const options = pickQueryTerms(req.query, [
@@ -95,12 +109,24 @@ const tripPhotos = catchAsync(async (req, res) => {
   })
 })
 
+const deleteTrip = catchAsync(async (req, res) => {
+  const user = req.user
+  await tripService.deleteTrip(user, req.params.tripId)
+
+  sendResponse(res, {
+    message: "Trip deleted successfully",
+    data: null,
+  })
+})
+
 export const tripController = {
   createTrip,
+  updateTrip,
   getTrips,
   getMyTrips,
   getTripById,
   tripTypes,
   topTripTypes,
   tripPhotos,
+  deleteTrip,
 }
