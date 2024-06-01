@@ -21,4 +21,10 @@ export default {
     apiKey: process.env.CLOUD_API_KEY,
     apiSecret: process.env.CLOUD_API_SECRET,
   },
+  seed: {
+    name: process.env.SEED_ADMIN_NAME,
+    username: process.env.SEED_ADMIN_USERNAME,
+    email: process.env.SEED_ADMIN_EMAIL,
+    password: process.env.SEED_ADMIN_PASSWORD,
+  },
 }

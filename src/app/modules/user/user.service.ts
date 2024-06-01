@@ -4,6 +4,7 @@ import {
   IOptions,
   parseFilterOptions,
   parseOptions,
+  parseUserFilterOptions,
 } from "../../../helpers/query-helpers"
 import { Prisma, UserRole, UserStatus } from "@prisma/client"
 import { userSearchFields } from "./user.constant"
@@ -36,10 +37,10 @@ const getAllUsers = async (
   options: IOptions
 ) => {
   const { page, limit, skip, sortBy, sortOrder } = parseOptions(options)
-  const filterCondition: Prisma.UserWhereInput[] = parseFilterOptions(
+  const filterCondition = parseUserFilterOptions(
     query,
     userSearchFields
-  )
+  ) as Prisma.UserWhereInput[]
 
   const users = await prisma.user.findMany({
     where: {
@@ -59,11 +60,12 @@ const getAllUsers = async (
     },
   })
 
+  console.log({ users })
+
   const total = await prisma.user.count({
     where: {
       AND: filterCondition,
       isDeleted: false,
-      role: UserRole.User,
     },
   })
 

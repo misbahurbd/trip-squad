@@ -81,7 +81,7 @@ const userRegister = async (userData: IUserRegister) => {
     ])
 
     // send verification email
-    await sendMail(user.profile.email, "Verify your account", emailTemplate)
+    sendMail(user.profile.email, "Verify your account", emailTemplate)
 
     return user.profile
   })
@@ -184,7 +184,8 @@ const changePassword = async (
   return result
 }
 
-const verifyAccount = async (token: string) => {
+const verifyAccount = async (token: string, currentUser: JwtPayload | null) => {
+  console.log({ token })
   const verificationToken = await prisma.verificationToken.findFirst({
     where: {
       token,
@@ -194,6 +195,16 @@ const verifyAccount = async (token: string) => {
       },
     },
   })
+  console.log(verificationToken)
+
+  if (currentUser) {
+    if (verificationToken?.email !== currentUser.email) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        "Invalid verification token not match"
+      )
+    }
+  }
 
   if (!verificationToken) {
     throw new AppError(httpStatus.NOT_FOUND, "Invalid verification token")
@@ -222,8 +233,71 @@ const verifyAccount = async (token: string) => {
     await tx.verificationToken.delete({
       where: {
         token: verificationToken.token,
+        email: verificationToken.email,
       },
     })
+
+    return user.profile
+  })
+  return result
+}
+
+const resendVerificationLink = async (currentUser: JwtPayload) => {
+  const user = await prisma.user.findFirst({
+    where: {
+      id: currentUser.id,
+      isDeleted: false,
+    },
+    include: {
+      profile: true,
+    },
+  })
+
+  if (!user || !user.profile || !user.profile.email) {
+    throw new AppError(httpStatus.NOT_FOUND, "User not found")
+  }
+
+  const isAlreadyVerified = await prisma.user.findFirst({
+    where: {
+      id: user.id,
+      emailVerified: {
+        not: null,
+      },
+    },
+  })
+
+  if (isAlreadyVerified) {
+    throw new AppError(httpStatus.CONFLICT, "Your account is already verified")
+  }
+
+  const result = await prisma.$transaction(async tx => {
+    await tx.verificationToken.deleteMany({
+      where: {
+        email: user.email,
+      },
+    })
+
+    const verificationToken = await tx.verificationToken.create({
+      data: {
+        email: user.email.toLowerCase(),
+        token: crypto.randomUUID().toString(),
+        tokenType: TokenType.Verify,
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 6),
+      },
+    })
+
+    // create verification link
+    const verificationLink = `${config.clientUrl}/verify?token=${verificationToken.token}`
+
+    // get verification email template
+    const emailTemplate = await getEmailTemplate("verification.html", [
+      { replaceKey: "name", replaceValue: user?.profile?.name || "Buddy" },
+      { replaceKey: "verification-link", replaceValue: verificationLink },
+      { replaceKey: "duration", replaceValue: "6" },
+    ])
+
+    // send verification email
+    sendMail(user.email, "Verify your account", emailTemplate)
 
     return user.profile
   })
@@ -334,4 +408,5 @@ export const authService = {
   verifyAccount,
   forgetPassword,
   resetPassword,
+  resendVerificationLink,
 }

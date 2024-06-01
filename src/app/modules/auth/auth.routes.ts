@@ -2,7 +2,7 @@ import express from "express"
 import { authController } from "./auth.controller"
 import { validateRequest } from "../../middlewares/validate-request"
 import { authValidation } from "./auth.validation"
-import { reqLimiter } from "../../middlewares/rate-limiter"
+import { reqLimiter, verifyTokenLimit } from "../../middlewares/rate-limiter"
 import { checkAuth } from "../../middlewares/check-auth"
 
 const router = express.Router()
@@ -12,19 +12,35 @@ router.post(
   validateRequest(authValidation.registerSchema),
   authController.userRegister
 )
-router.post("/login", reqLimiter(100), authController.userLogin)
+router.post("/login", reqLimiter(10), authController.userLogin)
 
-router.post("/verify/:token", authController.verifyAccount)
+router.post(
+  "/resend-verification-link",
+  checkAuth(),
+  verifyTokenLimit(),
+  authController.resendVerificationLink
+)
 
-router.put("/change-password", checkAuth(), authController.changePassword)
+router.post("/verify/:token", reqLimiter(10), authController.verifyAccount)
+
+router.put(
+  "/change-password",
+  checkAuth(),
+  reqLimiter(5),
+  authController.changePassword
+)
 
 router.post(
   "/forget-password",
-  reqLimiter(3),
+  reqLimiter(5),
   validateRequest(authValidation.forgetPasswordSchema),
   authController.forgetPassword
 )
 
-router.post("/reset-password/:token", authController.resetPassword)
+router.post(
+  "/reset-password/:token",
+  reqLimiter(5),
+  authController.resetPassword
+)
 
 export const authRoutes = router

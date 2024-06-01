@@ -1,8 +1,2 @@
-export const userQueryFields = [
-  "searchTerm",
-  "name",
-  "email",
-  "mobile",
-  "username",
-]
+export const userQueryFields = ["searchTerm"]
 export const userSearchFields = ["name", "email", "mobile", "username"]

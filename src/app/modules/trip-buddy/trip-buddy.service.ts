@@ -1,8 +1,16 @@
 import httpStatus from "http-status"
 import prisma from "../../../utils/prisma-client"
 import { AppError } from "../../errors/app-error"
-import { IOptions, parseOptions } from "../../../helpers/query-helpers"
+import {
+  IOptions,
+  parseOptions,
+  parseTripBuddisSearchOptions,
+  parseTripBuddyHistorySearchOptions,
+  parseTripBuddySearchOptions,
+} from "../../../helpers/query-helpers"
 import { ITripBuddy } from "./trip-buddy.interface"
+import { Prisma } from "@prisma/client"
+import { tripBuddySearchFields } from "./trip-buddy.constant"
 
 const tripBuddyRequest = async (
   userId: string,
@@ -31,11 +39,20 @@ const tripBuddyRequest = async (
   return tripBuddy
 }
 
-const tripBuddyRequestByUserId = async (userId: string, options: IOptions) => {
+const tripBuddyRequestByUserId = async (
+  userId: string,
+  query: any,
+  options: IOptions
+) => {
   const { page, limit, skip, sortBy, sortOrder } = parseOptions(options)
+  const searchFilter = parseTripBuddySearchOptions(
+    query,
+    tripBuddySearchFields
+  ) as Prisma.TripBuddyWhereInput[]
 
   const requests = await prisma.tripBuddy.findMany({
     where: {
+      AND: searchFilter,
       trip: {
         creatorId: userId,
       },
@@ -59,7 +76,10 @@ const tripBuddyRequestByUserId = async (userId: string, options: IOptions) => {
 
   const total = await prisma.tripBuddy.count({
     where: {
-      userId,
+      AND: searchFilter,
+      trip: {
+        creatorId: userId,
+      },
       status: "Pending",
     },
   })
@@ -91,8 +111,147 @@ const tripBuddyResponse = async (
   return tripBuddy
 }
 
+const tripBuddyRequestHistory = async (
+  userId: string,
+  query: any,
+  options: IOptions
+) => {
+  const { page, limit, skip } = parseOptions(options)
+  const searchFilter = parseTripBuddyHistorySearchOptions(
+    query,
+    tripBuddySearchFields
+  ) as Prisma.TripBuddyWhereInput[]
+
+  const requests = await prisma.tripBuddy.findMany({
+    where: {
+      AND: searchFilter,
+      userId,
+      status: "Pending",
+    },
+    include: {
+      trip: {
+        include: {
+          createdBy: {
+            select: {
+              profile: true,
+            },
+          },
+        },
+      },
+      user: {
+        select: {
+          username: true,
+          profile: true,
+        },
+      },
+    },
+    skip,
+    take: limit,
+    orderBy: {
+      updatedAt: "desc",
+    },
+  })
+
+  const total = await prisma.tripBuddy.count({
+    where: {
+      AND: searchFilter,
+      userId,
+    },
+  })
+
+  return {
+    data: requests,
+    meta: {
+      page,
+      limit,
+      total,
+    },
+  }
+}
+
+const tripBuddies = async (userId: string, query: any, options: IOptions) => {
+  const { page, limit, skip, sortBy, sortOrder } = parseOptions(options)
+  const searchFilter = parseTripBuddisSearchOptions(
+    query,
+    tripBuddySearchFields
+  ) as Prisma.TripBuddyWhereInput[]
+
+  const buddies = await prisma.tripBuddy.findMany({
+    where: {
+      AND: searchFilter,
+      OR: [
+        {
+          userId,
+        },
+        {
+          trip: {
+            creatorId: userId,
+          },
+        },
+      ],
+      status: "Approved",
+    },
+    include: {
+      trip: {
+        include: {
+          tripBuddy: {
+            where: {
+              status: "Approved",
+            },
+            select: {
+              user: {
+                select: {
+                  profile: true,
+                },
+              },
+            },
+          },
+          createdBy: {
+            select: {
+              profile: true,
+            },
+          },
+        },
+      },
+    },
+    skip,
+    take: limit,
+    orderBy: {
+      [sortBy]: sortOrder,
+    },
+  })
+
+  const total = await prisma.tripBuddy.count({
+    where: {
+      AND: searchFilter,
+      OR: [
+        {
+          userId,
+        },
+        {
+          trip: {
+            creatorId: userId,
+          },
+        },
+      ],
+      status: "Approved",
+    },
+  })
+
+  return {
+    data: buddies,
+    meta: {
+      page,
+      limit,
+      total,
+    },
+  }
+}
+
 export const tripBuddyService = {
   tripBuddyRequest,
   tripBuddyRequestByUserId,
   tripBuddyResponse,
+  tripBuddyRequestHistory,
+  tripBuddies,
 }

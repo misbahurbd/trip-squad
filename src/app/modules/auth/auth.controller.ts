@@ -35,11 +35,22 @@ const userLogin = catchAsync(async (req, res) => {
 })
 
 const verifyAccount = catchAsync(async (req, res) => {
+  const user = req.user
   const token = req.params.token
-  await authService.verifyAccount(token)
+  await authService.verifyAccount(token, user)
 
   sendResponse(res, {
     message: "Account verified successfully",
+    data: null,
+  })
+})
+
+const resendVerificationLink = catchAsync(async (req, res) => {
+  const user = req.user
+  await authService.resendVerificationLink(user)
+
+  sendResponse(res, {
+    message: "Verification link sent successfully",
     data: null,
   })
 })
@@ -83,4 +94,5 @@ export const authController = {
   changePassword,
   forgetPassword,
   resetPassword,
+  resendVerificationLink,
 }

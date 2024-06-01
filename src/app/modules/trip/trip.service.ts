@@ -198,7 +198,11 @@ const getTripById = async (id: string) => {
           profile: true,
           _count: {
             select: {
-              trip: true,
+              trip: {
+                where: {
+                  isDeleted: false,
+                },
+              },
             },
           },
         },
