@@ -19,8 +19,8 @@ const userLogin = catchAsync(async (req, res) => {
   res.cookie("refreshToken", result.refreshToken, {
     secure: config.env === "production",
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 * 7,
-    sameSite: "lax",
+    maxAge: 1000 * 60 * 60 * 24 * 30,
+    sameSite: "none",
   })
 
   sendResponse(res, {
@@ -86,6 +86,27 @@ const resetPassword = catchAsync(async (req, res) => {
   })
 })
 
+const refreshToken = catchAsync(async (req, res) => {
+  const { refreshToken } = req.cookies
+
+  const result = await authService.refreshToken(refreshToken)
+
+  res.cookie("refreshToken", result.refreshToken, {
+    secure: config.env === "production",
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 * 7,
+    sameSite: "none",
+  })
+
+  sendResponse(res, {
+    message: "Generate new access token successfully",
+    data: {
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+    },
+  })
+})
+
 export const authController = {
   userRegister,
   userLogin,
@@ -94,4 +115,5 @@ export const authController = {
   forgetPassword,
   resetPassword,
   resendVerificationLink,
+  refreshToken,
 }

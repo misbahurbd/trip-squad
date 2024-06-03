@@ -123,8 +123,6 @@ const getAllUsers = async (
     },
   })
 
-  console.log({ users })
-
   const total = await prisma.user.count({
     where: {
       AND: filterCondition,

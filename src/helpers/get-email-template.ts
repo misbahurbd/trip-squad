@@ -25,7 +25,6 @@ const getEmailTemplate = async (
     return replacedContent
   } catch (error) {
     throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, "Something went wrong")
-    console.log(error)
   }
 }
 

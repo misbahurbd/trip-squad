@@ -6,7 +6,7 @@ import prisma from "../../../utils/prisma-client"
 import { AppError } from "../../errors/app-error"
 import config from "../../../config"
 import sendMail from "../../../utils/mailer"
-import { generateToken } from "../../../helpers/jwt-helper"
+import { generateToken, verifyToken } from "../../../helpers/jwt-helper"
 import { JwtPayload } from "jsonwebtoken"
 import {
   getResetTemplate,
@@ -121,14 +121,13 @@ const userLogin = async (credentials: IUserLogin) => {
 
   const jwtpayload = {
     id: user.id,
-    email: user.email,
     role: user.role,
   }
-  const accessToken = generateToken(jwtpayload, config.jwt.accessSecret!, "1d")
+  const accessToken = generateToken(jwtpayload, config.jwt.accessSecret!, "7d")
   const refreshToken = generateToken(
     jwtpayload,
     config.jwt.refreshSecret!,
-    "7d"
+    "30d"
   )
 
   return {
@@ -210,7 +209,7 @@ const verifyAccount = async (token: string, currentUser: JwtPayload | null) => {
         email: verificationToken.email,
       },
       data: {
-        emailVerified: new Date(),
+        emailVerified: true,
       },
       select: {
         profile: true,
@@ -254,9 +253,7 @@ const resendVerificationLink = async (currentUser: JwtPayload) => {
   const isAlreadyVerified = await prisma.user.findFirst({
     where: {
       id: user.id,
-      emailVerified: {
-        not: null,
-      },
+      emailVerified: true,
     },
   })
 
@@ -401,6 +398,30 @@ const resetPassword = async (
   return result
 }
 
+const refreshToken = async (token: string) => {
+  const user = await verifyToken(token, config.jwt.refreshSecret!)
+  if (!user || !user.id) {
+    throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized")
+  }
+
+  const jwtpayload = {
+    id: user.id,
+    role: user.role,
+  }
+  const accessToken = generateToken(jwtpayload, config.jwt.accessSecret!, "1d")
+  const refreshToken = generateToken(
+    jwtpayload,
+    config.jwt.refreshSecret!,
+    "7d"
+  )
+
+  return {
+    user,
+    accessToken,
+    refreshToken,
+  }
+}
+
 export const authService = {
   userRegister,
   userLogin,
@@ -409,4 +430,5 @@ export const authService = {
   forgetPassword,
   resetPassword,
   resendVerificationLink,
+  refreshToken,
 }

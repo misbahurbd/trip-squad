@@ -104,25 +104,32 @@ Server will start on `http://localhost:5000` as `PORT` on .env file
 - Verify Token: Contain verify token in URL.
 - Example URL: `http://localhost:5000/api/v1/auth/verify/:token`
 
-### 4. Resend Verification Link:
+### 4. Refresh Token:
+
+- Endpoint: **POST /api/v1/auth/refresh-token**
+- Refresh Token: Refresh token will provided with cookie.
+- Request Headers: `Authorization: <JWT_TOKEN>`
+- Example URL: `http://localhost:5000/api/v1/auth/refresh-token`
+
+### 5. Resend Verification Link:
 
 - Endpoint: **POST /api/v1/auth/resend-verification-link** `Public Only`
 - Example URL: `http://localhost:5000/api/v1/auth/resend-verification-link`
 
-### 5. Change Password:
+### 6. Change Password:
 
 - Endpoint: **POST /api/v1/auth/change-password** `Private`
 - Request body: Contain user credentials in JSON.
 - Request Headers: `Authorization: <JWT_TOKEN>`
 - Example URL: `http://localhost:5000/api/v1/auth/change-password`
 
-### 6. Change Password:
+### 7. Change Password:
 
 - Endpoint: **POST /api/v1/auth/forget-password** `Public Only`
 - Request body: Contain user credentials object in JSON.
 - Example URL: `http://localhost:5000/api/v1/auth/forget-password`
 
-### 6. Reset Password:
+### 8. Reset Password:
 
 - Endpoint: **POST /api/v1/auth/reset-password/:token** `Public Only`
 - Reset Token: Contain reset token in URL.

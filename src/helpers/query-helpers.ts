@@ -303,128 +303,112 @@ export const parseTripBuddisSearchOptions = (
     filterCondition.push({
       OR: searchableField.map(field => {
         switch (field) {
-          case "destination":
-            return {
-              trip: {
-                destination: {
-                  contains: searchTerm,
-                  mode: "insensitive",
-                },
-              },
-            }
-          case "location":
-            return {
-              trip: {
-                location: {
-                  contains: searchTerm,
-                  mode: "insensitive",
-                },
-              },
-            }
           case "username":
             return {
-              trip: {
-                OR: [
-                  {
-                    tripBuddy: {
-                      some: {
-                        user: {
-                          username: {
+              tripBuddy: {
+                some: {
+                  OR: [
+                    {
+                      user: {
+                        [field]: {
+                          contains: searchTerm,
+                          mode: "insensitive",
+                        },
+                      },
+                    },
+                    {
+                      trip: {
+                        createdBy: {
+                          [field]: {
                             contains: searchTerm,
                             mode: "insensitive",
                           },
                         },
                       },
                     },
-                  },
-                  {
-                    createdBy: {
-                      username: {
-                        contains: searchTerm,
-                        mode: "insensitive",
-                      },
-                    },
-                  },
-                ],
+                  ],
+                },
               },
             }
           case "email":
             return {
-              trip: {
-                OR: [
-                  {
-                    tripBuddy: {
-                      some: {
-                        email: {
-                          contains: searchTerm,
-                          mode: "insensitive",
-                        },
-                      },
-                    },
-                  },
-                  {
-                    createdBy: {
-                      email: {
+              tripBuddy: {
+                some: {
+                  OR: [
+                    {
+                      [field]: {
                         contains: searchTerm,
                         mode: "insensitive",
                       },
                     },
-                  },
-                ],
+                    {
+                      trip: {
+                        createdBy: {
+                          profile: {
+                            [field]: {
+                              contains: searchTerm,
+                              mode: "insensitive",
+                            },
+                          },
+                        },
+                      },
+                    },
+                  ],
+                },
               },
             }
           case "name":
             return {
-              trip: {
-                OR: [
-                  {
-                    tripBuddy: {
-                      some: {
-                        name: {
-                          contains: searchTerm,
-                          mode: "insensitive",
+              tripBuddy: {
+                some: {
+                  OR: [
+                    {
+                      trip: {
+                        createdBy: {
+                          profile: {
+                            [field]: {
+                              contains: searchTerm,
+                              mode: "insensitive",
+                            },
+                          },
                         },
                       },
                     },
-                  },
-                  {
-                    createdBy: {
-                      profile: {
-                        name: {
-                          contains: searchTerm,
-                          mode: "insensitive",
-                        },
+                    {
+                      [field]: {
+                        contains: searchTerm,
+                        mode: "insensitive",
                       },
                     },
-                  },
-                ],
+                  ],
+                },
               },
             }
           case "mobile":
             return {
-              trip: {
-                OR: [
-                  {
-                    tripBuddy: {
-                      some: {
-                        mobile: {
-                          contains: searchTerm,
-                          mode: "insensitive",
+              tripBuddy: {
+                some: {
+                  OR: [
+                    {
+                      trip: {
+                        createdBy: {
+                          profile: {
+                            [field]: {
+                              contains: searchTerm,
+                              mode: "insensitive",
+                            },
+                          },
                         },
                       },
                     },
-                  },
-                  {
-                    createdBy: {
-                      profile: {
-                        mobile: {
-                          contains: searchTerm,
-                          mode: "insensitive",
-                        },
+                    {
+                      [field]: {
+                        contains: searchTerm,
+                        mode: "insensitive",
                       },
                     },
-                  },
-                ],
+                  ],
+                },
               },
             }
           default:

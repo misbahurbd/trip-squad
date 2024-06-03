@@ -173,43 +173,53 @@ const tripBuddies = async (userId: string, query: any, options: IOptions) => {
   const searchFilter = parseTripBuddisSearchOptions(
     query,
     tripBuddySearchFields
-  ) as Prisma.TripBuddyWhereInput[]
+  ) as Prisma.TripWhereInput[]
 
-  const buddies = await prisma.tripBuddy.findMany({
+  const buddies = await prisma.trip.findMany({
     where: {
       AND: searchFilter,
-      OR: [
-        {
-          userId,
-        },
-        {
-          trip: {
-            creatorId: userId,
-          },
-        },
-      ],
-      status: "Approved",
-    },
-    include: {
-      trip: {
-        include: {
-          tripBuddy: {
-            where: {
+      isDeleted: false,
+      tripBuddy: {
+        some: {
+          AND: [
+            {
               status: "Approved",
             },
-            select: {
-              user: {
-                select: {
-                  profile: true,
+            {
+              OR: [
+                {
+                  userId,
                 },
-              },
+                {
+                  trip: {
+                    creatorId: userId,
+                  },
+                },
+              ],
             },
-          },
-          createdBy: {
+          ],
+        },
+      },
+    },
+    select: {
+      id: true,
+      photos: true,
+      destination: true,
+      startDate: true,
+      endDate: true,
+      location: true,
+      tripBuddy: {
+        include: {
+          user: {
             select: {
               profile: true,
             },
           },
+        },
+      },
+      createdBy: {
+        select: {
+          profile: true,
         },
       },
     },
@@ -220,20 +230,31 @@ const tripBuddies = async (userId: string, query: any, options: IOptions) => {
     },
   })
 
-  const total = await prisma.tripBuddy.count({
+  const total = await prisma.trip.count({
     where: {
       AND: searchFilter,
-      OR: [
-        {
-          userId,
+      isDeleted: false,
+      tripBuddy: {
+        some: {
+          AND: [
+            {
+              status: "Approved",
+            },
+            {
+              OR: [
+                {
+                  userId,
+                },
+                {
+                  trip: {
+                    creatorId: userId,
+                  },
+                },
+              ],
+            },
+          ],
         },
-        {
-          trip: {
-            creatorId: userId,
-          },
-        },
-      ],
-      status: "Approved",
+      },
     },
   })
 

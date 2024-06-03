@@ -60,7 +60,6 @@ const updateRole = catchAsync(async (req, res) => {
 })
 
 const updateStatus = catchAsync(async (req, res) => {
-  console.log(req.body)
   const result = await userService.updateStatus(req.params.userId, req.body)
 
   sendResponse(res, {

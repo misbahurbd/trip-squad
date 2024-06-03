@@ -7,7 +7,7 @@ const tripSchema = z.object({
   startDate: z.string().min(1, { message: "Start date is required" }),
   endDate: z.string().min(1, { message: "End date is required" }),
   tripType: z.string().min(1, { message: "Trip type is required" }),
-  budget: z.number().min(1, { message: "Budget is required" }),
+  budget: z.string().min(1, { message: "Budget is required" }),
   itinerary: z.string().min(1, { message: "Itinerary is required" }),
 })
 

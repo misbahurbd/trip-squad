@@ -14,7 +14,7 @@ export const checkAuth = (...roles: UserRole[]) => {
 
     const payload = await verifyToken(token, config.jwt.accessSecret!)
     if (!payload) {
-      throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized!")
+      throw new AppError(httpStatus.FORBIDDEN, "You are not authorized!")
     }
 
     if (roles.length && !roles.includes(payload.role))

@@ -5,25 +5,48 @@ import uploadOnCloudinary from "../../../utils/cloudinary"
 import { AppError } from "../../errors/app-error"
 import httpStatus from "http-status"
 
-const updateProfile = async (user: JwtPayload, profileData: IUpdateProfile) => {
+const updateProfile = async (
+  currentUser: JwtPayload,
+  profileData: IUpdateProfile
+) => {
   const { username, email, ...profileUpdateData } = profileData
 
-  const profile = await prisma.profile.update({
-    where: {
-      email: user.email,
-    },
-    data: {
-      ...profileUpdateData,
-      user: {
-        update: {
-          username,
-          email,
+  if (currentUser.email !== profileData.email) {
+    const profile = await prisma.profile.update({
+      where: {
+        email: currentUser.email,
+      },
+      data: {
+        ...profileUpdateData,
+        email,
+        user: {
+          update: {
+            email,
+            username,
+            emailVerified: false,
+          },
         },
       },
-    },
-  })
-
-  return profile
+    })
+    return profile
+  } else {
+    const profile = await prisma.profile.update({
+      where: {
+        email: currentUser.email,
+      },
+      data: {
+        ...profileUpdateData,
+        email,
+        user: {
+          update: {
+            email,
+            username,
+          },
+        },
+      },
+    })
+    return profile
+  }
 }
 
 const updateProfilePhoto = async (

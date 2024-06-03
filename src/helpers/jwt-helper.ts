@@ -24,7 +24,6 @@ export const verifyToken = async (token: string, secret: string) => {
     const user = await prisma.user.findUnique({
       where: {
         id: decode.id,
-        email: decode.email,
         role: decode.role,
         status: "Active",
         isDeleted: false,

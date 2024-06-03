@@ -15,6 +15,7 @@ router.post(
 router.post("/login", reqLimiter(10), authController.userLogin)
 
 router.post("/verify/:token", reqLimiter(10), authController.verifyAccount)
+router.post("/refresh-token", authController.refreshToken)
 
 router.post(
   "/resend-verification-link",
