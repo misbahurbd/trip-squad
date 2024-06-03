@@ -30,7 +30,11 @@ const updateProfilePhoto = async (
   user: JwtPayload,
   photo: Express.Multer.File
 ) => {
-  const response = await uploadOnCloudinary(photo.path)
+  const b64 = Buffer.from(photo.buffer).toString("base64")
+  const dataURI = "data:" + photo.mimetype + ";base64," + b64
+
+  const response = await uploadOnCloudinary(dataURI)
+
   if (!response || !response.secure_url) {
     throw new AppError(httpStatus.BAD_REQUEST, "Unable to upload photo")
   }

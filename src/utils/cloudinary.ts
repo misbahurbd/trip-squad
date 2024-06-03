@@ -1,4 +1,8 @@
-import { UploadApiResponse, v2 as cloudinary } from "cloudinary"
+import {
+  UploadApiOptions,
+  UploadApiResponse,
+  v2 as cloudinary,
+} from "cloudinary"
 import fs from "fs"
 import config from "../config"
 
@@ -9,16 +13,20 @@ cloudinary.config({
 })
 
 const uploadOnCloudinary = async (
-  localFilePath: string
+  imgSrc: string
 ): Promise<UploadApiResponse | null> => {
   try {
-    if (!localFilePath) return null
-    const response = await cloudinary.uploader.upload(localFilePath)
+    if (!imgSrc) return null
+
+    const options: UploadApiOptions = {
+      folder: "trip-squad",
+    }
+
+    const response = await cloudinary.uploader.upload(imgSrc, options)
 
     return response
   } catch (error) {
-    console.log({ error })
-    fs.unlinkSync(localFilePath)
+    fs.unlinkSync(imgSrc)
     return null
   }
 }

@@ -14,6 +14,8 @@ router.post(
 )
 router.post("/login", reqLimiter(10), authController.userLogin)
 
+router.post("/verify/:token", reqLimiter(10), authController.verifyAccount)
+
 router.post(
   "/resend-verification-link",
   checkAuth(),
@@ -21,12 +23,11 @@ router.post(
   authController.resendVerificationLink
 )
 
-router.post("/verify/:token", reqLimiter(10), authController.verifyAccount)
-
 router.put(
   "/change-password",
   checkAuth(),
   reqLimiter(5),
+  validateRequest(authValidation.changePasswordSchema),
   authController.changePassword
 )
 

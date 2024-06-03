@@ -126,7 +126,6 @@ const tripBuddyRequestHistory = async (
     where: {
       AND: searchFilter,
       userId,
-      status: "Pending",
     },
     include: {
       trip: {

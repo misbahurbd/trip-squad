@@ -4,7 +4,7 @@ import { tripBuddyController } from "./trip-buddy.controller"
 
 const router = express.Router()
 
-router.get("/", checkAuth(), tripBuddyController.tripBuddyRequestByUserId)
+router.get("/", checkAuth("User"), tripBuddyController.tripBuddyRequestByUserId)
 router.get(
   "/history",
   checkAuth("User"),
@@ -13,12 +13,12 @@ router.get(
 router.get("/buddies", checkAuth("User"), tripBuddyController.tripBuddies)
 router.post(
   "/request/:tripId",
-  checkAuth(),
+  checkAuth("User"),
   tripBuddyController.tripBuddyRequest
 )
 router.put(
   "/response/:buddyId",
-  checkAuth(),
+  checkAuth("User"),
   tripBuddyController.tripBuddyResponse
 )
 

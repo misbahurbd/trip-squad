@@ -5,10 +5,13 @@ import { tripService } from "./trip.service"
 import { pickQueryTerms } from "../../../utils/pick-query"
 import { tripQueryFields } from "./trip.constant"
 import { AppError } from "../../errors/app-error"
+import { tripValidation } from "./trip.validation"
 
 const createTrip = catchAsync(async (req, res) => {
   const files = req.files as Express.Multer.File[]
   const data = JSON.parse(req.body.data)
+
+  tripValidation.tripSchema.parseAsync(data)
 
   if (!files || files.length == 0) {
     throw new AppError(httpStatus.BAD_REQUEST, "Trip image is required")

@@ -20,17 +20,16 @@ const userLogin = catchAsync(async (req, res) => {
     secure: config.env === "production",
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000 * 7,
-  })
-  res.cookie("session", result.accessToken, {
-    secure: config.env === "production",
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 * 1,
+    sameSite: "lax",
   })
 
   sendResponse(res, {
     statusCode: 200,
     message: "User logged in successfully",
-    data: null,
+    data: {
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+    },
   })
 })
 

@@ -13,6 +13,7 @@ router.put(
   validateRequest(profileValidation.profileSchema.partial()),
   profileController.updateProfile
 )
+
 router.put(
   "/profile-photo",
   checkAuth(),

@@ -6,12 +6,14 @@ import prisma from "../../../utils/prisma-client"
 import { AppError } from "../../errors/app-error"
 import config from "../../../config"
 import sendMail from "../../../utils/mailer"
-import getEmailTemplate from "../../../helpers/get-email-template"
 import { generateToken } from "../../../helpers/jwt-helper"
 import { JwtPayload } from "jsonwebtoken"
+import {
+  getResetTemplate,
+  getVerifyTemplate,
+} from "../../../utils/email-template"
 
 const userRegister = async (userData: IUserRegister) => {
-  // check if user already exist
   const isUserExist = await prisma.user.findFirst({
     where: {
       OR: [
@@ -73,17 +75,14 @@ const userRegister = async (userData: IUserRegister) => {
     // create verification link
     const verificationLink = `${config.clientUrl}/verify?token=${verificationToken.token}`
 
-    // get verification email template
-    const emailTemplate = await getEmailTemplate("verification.html", [
-      { replaceKey: "name", replaceValue: user.profile.name },
-      { replaceKey: "verification-link", replaceValue: verificationLink },
-      { replaceKey: "duration", replaceValue: "6" },
-    ])
-
     // send verification email
-    sendMail(user.profile.email, "Verify your account", emailTemplate)
+    sendMail(
+      user.profile.email,
+      "Verify your account",
+      getVerifyTemplate(user.profile.name, verificationLink, 6)
+    )
 
-    return user.profile
+    return { verificationToken, verificationLink, ...user.profile }
   })
   return result
 }
@@ -185,7 +184,6 @@ const changePassword = async (
 }
 
 const verifyAccount = async (token: string, currentUser: JwtPayload | null) => {
-  console.log({ token })
   const verificationToken = await prisma.verificationToken.findFirst({
     where: {
       token,
@@ -195,14 +193,10 @@ const verifyAccount = async (token: string, currentUser: JwtPayload | null) => {
       },
     },
   })
-  console.log(verificationToken)
 
-  if (currentUser) {
+  if (currentUser && currentUser.email) {
     if (verificationToken?.email !== currentUser.email) {
-      throw new AppError(
-        httpStatus.NOT_FOUND,
-        "Invalid verification token not match"
-      )
+      throw new AppError(httpStatus.NOT_FOUND, "Varification token not valid")
     }
   }
 
@@ -289,15 +283,12 @@ const resendVerificationLink = async (currentUser: JwtPayload) => {
     // create verification link
     const verificationLink = `${config.clientUrl}/verify?token=${verificationToken.token}`
 
-    // get verification email template
-    const emailTemplate = await getEmailTemplate("verification.html", [
-      { replaceKey: "name", replaceValue: user?.profile?.name || "Buddy" },
-      { replaceKey: "verification-link", replaceValue: verificationLink },
-      { replaceKey: "duration", replaceValue: "6" },
-    ])
-
     // send verification email
-    sendMail(user.email, "Verify your account", emailTemplate)
+    sendMail(
+      user.email,
+      "Verify your account",
+      getVerifyTemplate(user?.profile?.name || "buddy", verificationLink, 6)
+    )
 
     return user.profile
   })
@@ -337,20 +328,22 @@ const forgetPassword = async (payload: { identifer: string }) => {
     })
 
     const resetLink = `${config.clientUrl}/reset-password?token=${resetToken.token}`
-    const emailTemplate = await getEmailTemplate("reset-password.html", [
-      { replaceKey: "name", replaceValue: user.profile?.name || "" },
-      { replaceKey: "reset-link", replaceValue: resetLink },
-      { replaceKey: "duration", replaceValue: "1" },
-    ])
 
-    await sendMail(user.email, "Reset your password", emailTemplate)
+    await sendMail(
+      user.email,
+      "Reset your password",
+      getResetTemplate(user.profile?.name || "buddy", resetLink, 1)
+    )
     return user.profile
   })
 
   return result
 }
 
-const resetPassword = async (token: string, payload: { password: string }) => {
+const resetPassword = async (
+  token: string,
+  payload: { password: string; confirmPassword: string }
+) => {
   const verificationToken = await prisma.verificationToken.findFirst({
     where: {
       token,
@@ -374,6 +367,13 @@ const resetPassword = async (token: string, payload: { password: string }) => {
 
   if (user?.status !== "Active") {
     throw new AppError(httpStatus.UNAUTHORIZED, "Your account is blocked")
+  }
+
+  if (payload.password !== payload.confirmPassword) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Confirm Password does not match!"
+    )
   }
 
   const hashedPassword = await bcrypt.hash(

@@ -1,13 +1,59 @@
 import { JwtPayload } from "jsonwebtoken"
+import bcrypt from "bcrypt"
 import prisma from "../../../utils/prisma-client"
 import {
   IOptions,
-  parseFilterOptions,
   parseOptions,
   parseUserFilterOptions,
 } from "../../../helpers/query-helpers"
 import { Prisma, UserRole, UserStatus } from "@prisma/client"
 import { userSearchFields } from "./user.constant"
+import { ICreateUser } from "./user.interface"
+import uploadOnCloudinary from "../../../utils/cloudinary"
+import { AppError } from "../../errors/app-error"
+import httpStatus from "http-status"
+import config from "../../../config"
+
+const createUser = async (file: Express.Multer.File, userData: ICreateUser) => {
+  const b64 = Buffer.from(file.buffer).toString("base64")
+  const dataURI = "data:" + file.mimetype + ";base64," + b64
+
+  const response = await uploadOnCloudinary(dataURI)
+
+  if (!response || !response.secure_url) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Unable to upload photo")
+  }
+
+  if (userData.password !== userData.confirmPassword) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Password does not match")
+  }
+
+  const hashedPassword = await bcrypt.hash(
+    userData.password,
+    Number(config.hashRound)
+  )
+
+  const user = await prisma.user.create({
+    data: {
+      username: userData.username,
+      email: userData.email,
+      hashedPassword,
+      role: userData.role,
+      profile: {
+        create: {
+          name: userData.name,
+          email: userData.email,
+          profilePhoto: response.secure_url,
+        },
+      },
+    },
+    include: {
+      profile: true,
+    },
+  })
+
+  return user.profile
+}
 
 const currentUser = async (currentUser: JwtPayload) => {
   const user = await prisma.user.findFirst({
@@ -114,6 +160,7 @@ const updateStatus = async (
 }
 
 export const userService = {
+  createUser,
   currentUser,
   getAllUsers,
   updateRole,

@@ -18,7 +18,9 @@ const createTrip = async (
   tripData: ITrip
 ) => {
   const uploadImages = files.map(async file => {
-    const result = await uploadOnCloudinary(file.path)
+    const b64 = Buffer.from(file.buffer).toString("base64")
+    const dataURI = "data:" + file.mimetype + ";base64," + b64
+    const result = await uploadOnCloudinary(dataURI)
     return result
   })
 

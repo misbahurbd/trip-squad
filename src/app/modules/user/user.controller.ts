@@ -1,8 +1,25 @@
+import httpStatus from "http-status"
 import { catchAsync } from "../../../utils/catch-async"
 import { pickQueryTerms } from "../../../utils/pick-query"
 import { sendResponse } from "../../../utils/send-response"
+import { AppError } from "../../errors/app-error"
 import { userQueryFields } from "./user.constant"
 import { userService } from "./user.service"
+
+const createUser = catchAsync(async (req, res) => {
+  const file = req.file as Express.Multer.File
+  const data = JSON.parse(req.body.data)
+  if (!file) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Please upload an image")
+  }
+
+  const result = await userService.createUser(file, data)
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    message: "User created successfully",
+    data: result,
+  })
+})
 
 const currentUser = catchAsync(async (req, res) => {
   const currentUser = req.user
@@ -53,6 +70,7 @@ const updateStatus = catchAsync(async (req, res) => {
 })
 
 export const userController = {
+  createUser,
   currentUser,
   getAllUsers,
   updateRole,
