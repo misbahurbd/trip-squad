@@ -13,6 +13,8 @@ import uploadOnCloudinary from "../../../utils/cloudinary"
 import { AppError } from "../../errors/app-error"
 import httpStatus from "http-status"
 import config from "../../../config"
+import sendMail from "../../../utils/mailer"
+import { getUserInfoTemplate } from "../../../utils/email-template"
 
 const createUser = async (file: Express.Multer.File, userData: ICreateUser) => {
   const b64 = Buffer.from(file.buffer).toString("base64")
@@ -51,6 +53,21 @@ const createUser = async (file: Express.Multer.File, userData: ICreateUser) => {
       profile: true,
     },
   })
+
+  // generate login link
+  const loginLink = `${config.clientUrl}/login`
+
+  // send mail to user with credentials
+  sendMail(
+    user.email,
+    "Welcome to Trip Squad. Access new travel adventure",
+    getUserInfoTemplate(
+      userData.name,
+      loginLink,
+      userData.username,
+      userData.password
+    )
+  )
 
   return user.profile
 }
