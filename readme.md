@@ -26,9 +26,14 @@ Trip Squad is a web application designed to help users plan and organize their t
 - **User Profile:** Keep profile information up-to-date to foster connections and facilitate seamless trip planning and coordination.
 
 **Live Link:** https://trip-squad-server.vercel.app/
+
+
 **User Credentials**
+
 Username: rakibul
+
 Password: Rakibul@2021
+
 
 ## Installation
 
