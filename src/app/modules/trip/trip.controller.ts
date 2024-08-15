@@ -133,6 +133,15 @@ const postReview = catchAsync(async (req, res) => {
   })
 })
 
+const getTopReviews = catchAsync(async (req, res) => {
+  const result = await tripService.getTopReviews()
+
+  sendResponse(res, {
+    message: "Top reviews retrive successfully!",
+    data: result,
+  })
+})
+
 export const tripController = {
   createTrip,
   updateTrip,
@@ -144,4 +153,5 @@ export const tripController = {
   tripPhotos,
   deleteTrip,
   postReview,
+  getTopReviews,
 }

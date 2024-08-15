@@ -19,6 +19,7 @@ router.get("/trip-types", tripController.tripTypes)
 router.get("/top-trip-types", tripController.topTripTypes)
 router.get("/get-my-trips", checkAuth("User"), tripController.getMyTrips)
 router.get("/photos", tripController.tripPhotos)
+router.get("/reviews", tripController.getTopReviews)
 router.get("/:tripId", tripController.getTripById)
 router.put(
   "/:tripId",

@@ -6,7 +6,7 @@ import {
   parseFilterOptions,
   parseOptions,
 } from "../../../helpers/query-helpers"
-import { Prisma, User, UserRole } from "@prisma/client"
+import { Prisma, Review, UserRole } from "@prisma/client"
 import { tripSearchFields } from "./trip.constant"
 import uploadOnCloudinary from "../../../utils/cloudinary"
 import { AppError } from "../../errors/app-error"
@@ -352,6 +352,30 @@ const postReview = async (
   return review
 }
 
+const getTopReviews = async () => {
+  const reviews = await prisma.review.findMany({
+    include: {
+      user: {
+        select: {
+          profile: true,
+        },
+      },
+    },
+    orderBy: {
+      rating: "desc",
+    },
+  })
+
+  const response = reviews.reduce<Review[]>((acc, crr) => {
+    if (!acc.some((rev: Review) => rev.userId === crr.userId)) {
+      acc.push(crr)
+    }
+    return acc
+  }, [])
+
+  return response
+}
+
 export const tripService = {
   createTrip,
   updateTrip,
@@ -363,4 +387,5 @@ export const tripService = {
   tripsPhotos,
   deleteTrip,
   postReview,
+  getTopReviews,
 }
