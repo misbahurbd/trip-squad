@@ -1,5 +1,5 @@
 import { Jwt, JwtPayload } from "jsonwebtoken"
-import { ITrip } from "./trip.interface"
+import { IReview, ITrip } from "./trip.interface"
 import prisma from "../../../utils/prisma-client"
 import {
   IOptions,
@@ -218,6 +218,15 @@ const getTripById = async (id: string) => {
           },
         },
       },
+      reviews: {
+        include: {
+          user: {
+            select: {
+              profile: true,
+            },
+          },
+        },
+      },
     },
   })
 
@@ -326,6 +335,23 @@ const deleteTrip = async (user: JwtPayload, tripId: string) => {
   }
 }
 
+const postReview = async (
+  user: JwtPayload,
+  tripId: string,
+  reviewData: IReview
+) => {
+  const review = await prisma.review.create({
+    data: {
+      rating: Number(reviewData.rating),
+      content: reviewData.content,
+      userId: user.id,
+      tripId: tripId,
+    },
+  })
+
+  return review
+}
+
 export const tripService = {
   createTrip,
   updateTrip,
@@ -336,4 +362,5 @@ export const tripService = {
   topTripTypes,
   tripsPhotos,
   deleteTrip,
+  postReview,
 }

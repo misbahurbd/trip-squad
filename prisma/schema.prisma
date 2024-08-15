@@ -22,6 +22,7 @@ model User {
   updatedAt          DateTime    @updatedAt
   trip               Trip[]
   tripBuddy          TripBuddy[]
+  reviews            Review[]
 
   @@map("user")
 }
@@ -70,6 +71,7 @@ model Trip {
   tripBuddy   TripBuddy[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+  reviews     Review[]
 
   @@index([description, startDate, endDate])
   @@map("trip")
@@ -93,6 +95,23 @@ model TripBuddy {
 
   @@unique([userId, tripId])
   @@map("travel-buddy")
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  content   String
+  rating    Float
+  tripId    String
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentId  String?
+  parent    Review?  @relation("ReviewReplies", fields: [parentId], references: [id])
+  replies   Review[] @relation("ReviewReplies")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("reviews")
 }
 
 enum UserRole {

@@ -9,3 +9,8 @@ export interface ITrip {
   location: string
   itinerary: string
 }
+
+export interface IReview {
+  rating: number
+  content: string
+}

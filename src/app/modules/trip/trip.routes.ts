@@ -13,6 +13,7 @@ router.post(
   upload.array("images", 10),
   tripController.createTrip
 )
+router.post("/:tripId/review", checkAuth("User"), tripController.postReview)
 router.get("/", tripController.getTrips)
 router.get("/trip-types", tripController.tripTypes)
 router.get("/top-trip-types", tripController.topTripTypes)

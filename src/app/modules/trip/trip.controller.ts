@@ -122,6 +122,17 @@ const deleteTrip = catchAsync(async (req, res) => {
   })
 })
 
+const postReview = catchAsync(async (req, res) => {
+  const user = req.user
+  const { tripId } = req.params
+  const result = await tripService.postReview(user, tripId, req.body)
+
+  sendResponse(res, {
+    message: "Review posted successfully!",
+    data: result,
+  })
+})
+
 export const tripController = {
   createTrip,
   updateTrip,
@@ -132,4 +143,5 @@ export const tripController = {
   topTripTypes,
   tripPhotos,
   deleteTrip,
+  postReview,
 }
