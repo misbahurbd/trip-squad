@@ -10,3 +10,5 @@ export const tripQueryFields = [
   "maxBudget",
 ]
 export const tripSearchFields = ["destination", "description", "tripType"]
+
+export const overviewQueryFields = ["range"]

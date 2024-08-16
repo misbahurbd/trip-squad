@@ -3,7 +3,7 @@ import { catchAsync } from "../../../utils/catch-async"
 import { sendResponse } from "../../../utils/send-response"
 import { tripService } from "./trip.service"
 import { pickQueryTerms } from "../../../utils/pick-query"
-import { tripQueryFields } from "./trip.constant"
+import { overviewQueryFields, tripQueryFields } from "./trip.constant"
 import { AppError } from "../../errors/app-error"
 import { tripValidation } from "./trip.validation"
 
@@ -142,6 +142,17 @@ const getTopReviews = catchAsync(async (req, res) => {
   })
 })
 
+const getOverview = catchAsync(async (req, res) => {
+  const currentUser = req.user
+  const query = pickQueryTerms(req.query, overviewQueryFields)
+  const result = await tripService.getOverview(currentUser, query)
+
+  sendResponse(res, {
+    message: "Overview data retrive successfully!",
+    data: result,
+  })
+})
+
 export const tripController = {
   createTrip,
   updateTrip,
@@ -154,4 +165,5 @@ export const tripController = {
   deleteTrip,
   postReview,
   getTopReviews,
+  getOverview,
 }

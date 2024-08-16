@@ -1,4 +1,4 @@
-import { Jwt, JwtPayload } from "jsonwebtoken"
+import { JwtPayload } from "jsonwebtoken"
 import { IReview, ITrip } from "./trip.interface"
 import prisma from "../../../utils/prisma-client"
 import {
@@ -6,11 +6,12 @@ import {
   parseFilterOptions,
   parseOptions,
 } from "../../../helpers/query-helpers"
-import { Prisma, Review, UserRole } from "@prisma/client"
+import { Prisma, Review, Trip, TripBuddy, UserRole } from "@prisma/client"
 import { tripSearchFields } from "./trip.constant"
 import uploadOnCloudinary from "../../../utils/cloudinary"
 import { AppError } from "../../errors/app-error"
 import httpStatus from "http-status"
+import { endOfWeek, format, getMonth, startOfWeek, subDays } from "date-fns"
 
 const createTrip = async (
   user: JwtPayload,
@@ -376,6 +377,228 @@ const getTopReviews = async () => {
   return response
 }
 
+const getOverview = async (currentUser: JwtPayload, query: any) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: currentUser.id,
+    },
+  })
+
+  if (!user) {
+    throw new AppError(httpStatus.UNAUTHORIZED, "You are not authrozied")
+  }
+
+  const range =
+    query?.range === "weekly"
+      ? 7
+      : query?.range === "monthly"
+      ? 30
+      : query?.range === "yearly"
+      ? 365
+      : 365
+
+  const startDate = subDays(new Date(), range)
+
+  const tripCondition =
+    user.role === "User"
+      ? {
+          creatorId: user.id,
+          createdAt: {
+            gte: startDate,
+          },
+        }
+      : {
+          createdAt: {
+            gte: startDate,
+          },
+        }
+
+  // trip data fatching
+  const trips = await prisma.trip.findMany({
+    where: tripCondition,
+    select: {
+      createdAt: true,
+      id: true,
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+  })
+
+  interface TripSummary {
+    label: string
+    trip: number
+  }
+
+  const tripSummary = trips.reduce<TripSummary[]>((acc, crr) => {
+    const dateLabel = format(crr.createdAt, "d MMM, yyyy")
+    const existingDate = acc.find(p => p.label === dateLabel)
+
+    if (existingDate) {
+      existingDate.trip += 1
+    } else {
+      acc.push({
+        label: dateLabel,
+        trip: 1,
+      })
+    }
+
+    return acc
+  }, [])
+
+  const buddyCondition: Prisma.TripBuddyWhereInput =
+    user.role === "User"
+      ? {
+          OR: [
+            {
+              userId: user.id,
+            },
+            {
+              trip: {
+                creatorId: user.id,
+              },
+            },
+          ],
+          status: "Approved",
+          createdAt: {
+            gte: startDate,
+          },
+        }
+      : {
+          status: "Approved",
+          createdAt: {
+            gte: startDate,
+          },
+        }
+
+  // buddyes date fatching
+  const booking = await prisma.tripBuddy.findMany({
+    where: buddyCondition,
+    select: {
+      id: true,
+      createdAt: true,
+      trip: {
+        select: {
+          budget: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+  })
+  interface BuddySummary {
+    label: string
+    buddy: number
+    budget: number
+  }
+  const buddySummary = booking.reduce<BuddySummary[]>((acc, crr) => {
+    const dateLabel = format(crr.createdAt, "d MMM, yyyy")
+    const existingDate = acc.find(p => p.label === dateLabel)
+
+    if (existingDate) {
+      existingDate.buddy += 1
+      existingDate.budget += crr.trip.budget
+    } else {
+      acc.push({
+        label: dateLabel,
+        buddy: 1,
+        budget: crr.trip.budget,
+      })
+    }
+
+    return acc
+  }, [])
+
+  const uniqueLabels = Array.from(
+    new Set([
+      ...tripSummary.map(item => item.label),
+      ...buddySummary.map(item => item.label),
+    ])
+  )
+
+  const summary = uniqueLabels.map(label => {
+    const trip = tripSummary.find(item => item.label === label)?.trip || 0
+    const buddy = buddySummary.find(item => item.label === label)?.buddy || 0
+    const budget = buddySummary.find(item => item.label === label)?.budget || 0
+
+    return {
+      label,
+      trip,
+      buddy,
+      budget,
+    }
+  })
+
+  interface IChart {
+    label: string
+    trip: number
+    buddy: number
+  }
+
+  const chartData = summary.reduce<IChart[]>((acc: IChart[], crr) => {
+    const date = new Date(crr.label)
+    let label: string
+
+    const range = query?.range || "yearly"
+
+    switch (range) {
+      case "weekly":
+        label = format(date, "EEE, MMM d")
+        break
+      case "monthly":
+        label = format(date, "d MMM")
+        break
+      case "yearly":
+        label = format(date, "MMM yyyy")
+        break
+      default:
+        label = format(date, "MMM d, yyyy")
+        break
+    }
+
+    const existing = acc.find(chart => chart.label === label)
+    if (existing) {
+      existing.trip += crr.trip
+      existing.buddy += crr.buddy
+    } else {
+      acc.push({
+        label,
+        trip: 1,
+        buddy: crr.buddy,
+      })
+    }
+
+    return acc
+  }, [])
+
+  // Fetch and prepare trip types data
+  const tripTypes = await prisma.trip.groupBy({
+    by: ["tripType"],
+    _count: {
+      tripType: true,
+    },
+  })
+
+  const typeChart = tripTypes
+    .map(type => ({
+      type: type.tripType,
+      count: type._count.tripType,
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5)
+
+  return {
+    summary: {
+      trip: summary.reduce((acc, crr) => acc + crr.trip, 0),
+      buddy: summary.reduce((acc, crr) => acc + crr.buddy, 0),
+      budget: summary.reduce((acc, crr) => acc + crr.budget, 0),
+    },
+    chartData,
+    typeChart,
+  }
+}
+
 export const tripService = {
   createTrip,
   updateTrip,
@@ -388,4 +611,5 @@ export const tripService = {
   deleteTrip,
   postReview,
   getTopReviews,
+  getOverview,
 }
