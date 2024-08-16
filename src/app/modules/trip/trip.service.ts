@@ -460,13 +460,13 @@ const getOverview = async (currentUser: JwtPayload, query: any) => {
             },
           ],
           status: "Approved",
-          createdAt: {
+          updatedAt: {
             gte: startDate,
           },
         }
       : {
           status: "Approved",
-          createdAt: {
+          updatedAt: {
             gte: startDate,
           },
         }
@@ -484,7 +484,7 @@ const getOverview = async (currentUser: JwtPayload, query: any) => {
       },
     },
     orderBy: {
-      createdAt: "asc",
+      updatedAt: "asc",
     },
   })
   interface BuddySummary {

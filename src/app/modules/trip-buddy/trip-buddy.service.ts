@@ -28,6 +28,40 @@ const tripBuddyRequest = async (
     throw new AppError(httpStatus.BAD_REQUEST, "Your request already send!")
   }
 
+  const profile = await prisma.profile.findFirst({
+    where: {
+      userId: userId,
+      OR: [
+        {
+          mobile: null,
+        },
+        {
+          address: null,
+        },
+        {
+          city: null,
+        },
+        {
+          country: null,
+        },
+      ],
+    },
+  })
+
+  if (profile) {
+    await prisma.profile.update({
+      where: {
+        userId: userId,
+      },
+      data: {
+        mobile: profile?.mobile || tripBuddyData.mobile,
+        address: profile?.address || tripBuddyData.address,
+        city: profile?.city || tripBuddyData.city,
+        country: profile?.country || tripBuddyData.country,
+      },
+    })
+  }
+
   const tripBuddy = await prisma.tripBuddy.create({
     data: {
       userId,

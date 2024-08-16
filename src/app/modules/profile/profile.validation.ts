@@ -5,6 +5,9 @@ const profileSchema = z.object({
   mobile: z.string().min(1, { message: "Mobile is required" }),
   profilePhoto: z.string(),
   dateOfBirth: z.string(),
+  address: z.string().optional(),
+  city: z.string().optional(),
+  country: z.string().optional(),
   bio: z.string(),
 })
 
